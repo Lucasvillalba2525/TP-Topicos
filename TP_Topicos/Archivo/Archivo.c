@@ -1,6 +1,5 @@
 #include"C:\Users\Argentech\Desktop\TP_Topicos\Archivo\Archivo.h"
 #define esletra(c)((c>='A' && c<='Z')||(c>='a' && c<='z'))
-//#define esguion(c) (c=='_')
 #define esComilla(c) (c=='"')
 #define esEspacio(c) (c==' ')
 

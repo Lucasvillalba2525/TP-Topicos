@@ -63,6 +63,7 @@ bool buscar(Palabra*pal,char*campo)
 
 }
 
+/*
 int vectorCrear(Vector*vector)
 {
     vector->vec=malloc(MAX_LINEA*sizeof(int));
@@ -101,3 +102,4 @@ int redimensionar(Vector*vec)
 {
     return TODO_OK;
 }
+*/

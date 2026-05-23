@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1779496322 source:c:\users\argentech\desktop\tp_topicos\tp_topicos\main.c
+	"C:\Users\Argentech\Desktop\TP_Topicos\Archivo\Archivo.h"
+
+1779435905 c:\users\argentech\desktop\tp_topicos\archivo\archivo.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdbool.h>
+	<stddef.h>
+

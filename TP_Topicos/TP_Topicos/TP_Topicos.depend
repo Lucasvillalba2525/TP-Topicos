@@ -1,0 +1,16 @@
+# depslib dependency file v1.0
+1779986794 source:c:\users\argentech\desktop\tp_topicos\tp_topicos\main.c
+	"C:\Users\Argentech\Desktop\TP_Topicos\Archivo\Archivo.h"
+
+1779986492 c:\users\argentech\desktop\tp_topicos\archivo\archivo.h
+	"C:\Users\Argentech\Desktop\TP_Topicos\TDA_Vector\Vector.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdbool.h>
+
+1779885920 c:\users\argentech\desktop\tp_topicos\tda_vector\vector.h
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+

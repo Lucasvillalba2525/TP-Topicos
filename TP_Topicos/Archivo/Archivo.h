@@ -1,7 +1,7 @@
 #ifndef ARCHIVO_H_INCLUDED
 #define ARCHIVO_H_INCLUDED
 
-#include "C:\Users\Argentech\Desktop\TP_Topicos\TDA_Vector\Vector.h"
+#include "..\TDA_Vector\Vector.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,13 +22,18 @@
 
 typedef struct
 {
+    //punto 1
     int iID;
     int iWHOG;
     int iWPER;
     int iREGION;
     int iEDAD_SEL;
     int iSEXO_SEL;
-} RegIndice;
+    int iTP_GRANGRUPO_OCUPACIONYAUTOCONSUMO;
+    int iTP_GRANGRUPO_TRABAJOTOTAL;
+    int iTP_GRANGRUPO_TNR;
+
+}RegIndice;
 
 typedef struct
 {
@@ -38,8 +43,25 @@ typedef struct
     int REGION;
     int EDAD_SEL;
     int SEXO_SEL;
-}
- Registro;
+    //punto 2, 6, 8
+    char GRUPO_EDAD_SEL[20];
+    int TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO;
+    int TP_GRANGRUPO_TRABAJOTOTAL;
+    int TP_GRANGRUPO_TNR;
+    //punto 3
+    int TIPO_HOGAR_DCPOREDAD;
+    //punto 4
+    int TIPO_HOGAR_DCTOTAL;
+    //punto 5
+    int CUIDADO_SOLO_HOGAR;
+    //punto 7
+    int GRUPO_EDAD;
+    //punto 8
+    int TP_GRANGRUPO_PERSONALES;
+    //punto 9
+
+
+}Registro;
 
 typedef struct
 {
@@ -48,8 +70,7 @@ typedef struct
     int CantReg;
     int CantEstHogares;
     int CantEstPersonas;
-}
-CantPorRegion;
+}CantPorRegion;
 
 typedef struct
 {
@@ -73,8 +94,9 @@ void parseolinea(char* linea,Vector*vector,Buscar buscar);
 void procesarDatos(Vector*vector,Registro*reg,int cantReg,RegIndice*ireg);
 void mostrarRegistros(Registro*Reg,int cantReg);
 void SumaCantidad(Registro**miReg,int cantRegTot);
-
-
+void mostrarRegistrosIndices(RegIndice* iReg, int cantReg);
+void mostrarRangoEtarios(Registro *reg,int cant);
+void clasificacionRangoEtario(Registro *reg,int cant);
 bool buscarpalabra(void*pal1,void*pal2);
 bool buscarfaltante(void*pal1,void*pal2);
 

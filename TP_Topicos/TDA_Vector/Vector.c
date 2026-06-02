@@ -1,4 +1,4 @@
-#include "C:\Users\Argentech\Desktop\TP_Topicos\TDA_Vector\Vector.h"
+#include "Vector.h"
 
 int vectorCrear(Vector*vector)
 {

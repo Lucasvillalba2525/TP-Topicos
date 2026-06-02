@@ -1,4 +1,4 @@
-#include"C:\Users\Argentech\Desktop\TP_Topicos\Archivo\Archivo.h"
+#include "Archivo.h"
 
 void secpalCrear(char*Cad,Secpal*sec)
 {
@@ -52,11 +52,11 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
         return FALLA_LEC;
     }
 
-    // detectar índices
+    // detectar ï¿½ndices
     Secpal seclec;
     Palabra pal;
 
-    int iID=-1, iWHOG=-1, iWPER=-1,iREGION=-1, iSEXO=-1, iEDAD=-1;
+    int iID=-1, iWHOG=-1, iWPER=-1,iREGION=-1, iSEXO=-1, iEDAD=-1,iOCUPYAUTO=-1,iTRABTOTAL=-1,iTNR=-1;
     int cont=0;
 
     secpalCrear(linea, &seclec);
@@ -70,6 +70,9 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
         if(buscar(&pal,"REGION"))iREGION = cont;
         if(buscar(&pal,"EDAD_SEL"))iEDAD = cont;
         if(buscar(&pal,"SEXO_SEL"))iSEXO = cont;
+        if(buscar(&pal,"TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO"))iOCUPYAUTO = cont;
+        if(buscar(&pal,"TP_GRANGRUPO_TRABAJOTOTAL"))iTRABTOTAL = cont;
+        if(buscar(&pal,"TP_GRANGRUPO_TNR"))iTNR = cont;
 
         secpalLeer(&seclec, &pal);
         cont++;
@@ -82,9 +85,13 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
         iWPER,
         iREGION,
         iEDAD,
-        iSEXO
+        iSEXO,
+        iOCUPYAUTO,
+        iTRABTOTAL,
+        iTNR
     };
 
+    //mostrarRegistrosIndices(&indreg,9);
     int cap = 10;
 
     Registro *miReg = malloc(cap * sizeof(Registro));
@@ -178,6 +185,29 @@ void procesarDatos(Vector *vector, Registro *reg,int cantReg, RegIndice *ireg)
     reg[cantReg].EDAD_SEL = v[ireg->iEDAD_SEL];
 
     reg[cantReg].SEXO_SEL = v[ireg->iSEXO_SEL];
+
+    reg[cantReg].TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO = v[ireg->iTP_GRANGRUPO_OCUPACIONYAUTOCONSUMO];
+
+    reg[cantReg].TP_GRANGRUPO_TRABAJOTOTAL = v[ireg->iTP_GRANGRUPO_TRABAJOTOTAL];
+
+    reg[cantReg].TP_GRANGRUPO_TNR = v[ireg->iTP_GRANGRUPO_TNR];
+}
+
+void mostrarRegistrosIndices(RegIndice *iReg, int cantReg)
+{
+    puts("");
+    printf("\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+               iReg->iID,
+               iReg->iWHOG,
+               iReg->iWPER,
+               iReg->iREGION,
+               iReg->iEDAD_SEL,
+               iReg->iSEXO_SEL,
+               iReg->iTP_GRANGRUPO_OCUPACIONYAUTOCONSUMO,
+               iReg->iTP_GRANGRUPO_TRABAJOTOTAL,
+               iReg->iTP_GRANGRUPO_TNR);
+
+    fflush(stdout);
 }
 
 void mostrarRegistros(Registro* Reg, int cantReg)
@@ -196,6 +226,41 @@ void mostrarRegistros(Registro* Reg, int cantReg)
                Reg[i].SEXO_SEL);
 
         fflush(stdout);
+    }
+}
+
+void clasificacionRangoEtario(Registro *reg,int cant)
+{
+    for(int i = 0; i < cant; i++)
+    {
+        if(reg[i].EDAD_SEL >= 14 && reg[i].EDAD_SEL <= 29)
+            strcpy(reg[i].GRUPO_EDAD_SEL,"14 a 29 anios");
+        if(reg[i].EDAD_SEL >= 30 && reg[i].EDAD_SEL <= 64)
+            strcpy(reg[i].GRUPO_EDAD_SEL,"30 a 64 anios");
+        if(reg[i].EDAD_SEL >= 65)
+            strcpy(reg[i].GRUPO_EDAD_SEL,"65 anios o mas");
+    }
+    
+    mostrarRangoEtarios(reg,cant);
+}
+
+void mostrarRangoEtarios(Registro *reg,int cant)
+{
+    printf("ID\tWHOG\tWPER\tREGION\tSEXO_SEL\tEDAD_SEL\tOCUPACIONYAUTO\tTRAB.TOTAL\tTNR\tGRUPO_EDAD_SEL\n");
+
+    for(int i = 0; i < 10; i++)
+    {
+        printf("%d\t%15d\t%15d\t%20d\t%15d\t%15d\t%15d\t%15d\t%15d\t%s\n",
+               (reg + i)->ID,
+               (reg + i)->WHOG,
+               (reg + i)->WPER,
+               (reg + i)->REGION,
+               (reg + i)->SEXO_SEL,
+               (reg + i)->EDAD_SEL,
+               (reg + i)->TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO,
+               (reg + i)->TP_GRANGRUPO_TRABAJOTOTAL,
+               (reg + i)->TP_GRANGRUPO_TNR,
+               (reg + i)->GRUPO_EDAD_SEL);
     }
 }
 
@@ -228,7 +293,7 @@ void SumaCantidad(Registro **miReg, int cantRegisTot)
 
     for(int i = 0; i < REGIONES; i++)
     {
-        printf("%d\t%8d\t%8d\t%8d\t%s\n",
+        printf("%d\t%15d\t%15d\t%20d\t\t%s\n",
                (Region + i)->ID,
                (Region + i)->CantReg,
                (Region + i)->CantEstHogares,

@@ -1,4 +1,4 @@
-#include"C:\Users\Argentech\Desktop\TP_Topicos\Archivo\Archivo.h"
+#include "..\Archivo\Archivo.h"
 
 #define ARG_CSV 1
 
@@ -15,10 +15,11 @@ int main(int argc, char* argv[])
 
     printf("DEBUG FINAL cantReg=%d\n", cantReg);
 
-    //mostrarRegistros(Registro**reg, cantReg);
-
-    SumaCantidad(&reg,cantReg);
-
+    //mostrarRegistros(reg, cantReg);
+    //punto 1
+    //SumaCantidad(&reg,cantReg);
+    //punto 2
+    clasificacionRangoEtario(reg, cantReg);
     free(reg);
 
     return 0;
@@ -32,19 +33,12 @@ bool buscarpalabra(void*pal1,void*pal2)
 
     while((*i != '\0' && *c != '\0') && encontrado)
     {
-        if(*i==*c)
-            encontrado=true;
-        else
+        if(*i!=*c)
             encontrado=false;
         i++;
         c++;
     }
-
-    if(encontrado)
-        return true;
-    else
-        return false;
-
+    return encontrado;
 }
 
 bool buscarfaltante(void*pal1,void*pal2)

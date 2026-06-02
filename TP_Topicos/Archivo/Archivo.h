@@ -32,6 +32,8 @@ typedef struct
     int iTP_GRANGRUPO_OCUPACIONYAUTOCONSUMO;
     int iTP_GRANGRUPO_TRABAJOTOTAL;
     int iTP_GRANGRUPO_TNR;
+    //Punto 3
+    int iTIPO_HOGAR_DCPOREDAD;
 
 }RegIndice;
 
@@ -59,8 +61,6 @@ typedef struct
     //punto 8
     int TP_GRANGRUPO_PERSONALES;
     //punto 9
-
-
 }Registro;
 
 typedef struct
@@ -99,6 +99,11 @@ void mostrarRangoEtarios(Registro *reg,int cant);
 void clasificacionRangoEtario(Registro *reg,int cant);
 bool buscarpalabra(void*pal1,void*pal2);
 bool buscarfaltante(void*pal1,void*pal2);
+
+//punto 3
+void DistribucionSegunDemadantesPorRegion(Registro* reg, int cant);
+void mostrarDistribucionDemPorReg(int **mDemPorReg);
+
 
 
 //typedef int(*TxtAbin)(char*linea,void*reg);

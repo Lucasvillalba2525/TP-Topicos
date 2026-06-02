@@ -19,7 +19,11 @@ int main(int argc, char* argv[])
     //punto 1
     //SumaCantidad(&reg,cantReg);
     //punto 2
-    clasificacionRangoEtario(reg, cantReg);
+    //clasificacionRangoEtario(reg, cantReg);
+
+    //Punto 3
+    DistribucionSegunDemadantesPorRegion(reg, cantReg);
+
     free(reg);
 
     return 0;

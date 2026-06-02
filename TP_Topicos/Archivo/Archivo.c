@@ -56,7 +56,7 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
     Secpal seclec;
     Palabra pal;
 
-    int iID=-1, iWHOG=-1, iWPER=-1,iREGION=-1, iSEXO=-1, iEDAD=-1,iOCUPYAUTO=-1,iTRABTOTAL=-1,iTNR=-1;
+    int iID=-1, iWHOG=-1, iWPER=-1,iREGION=-1, iSEXO=-1, iEDAD=-1,iOCUPYAUTO=-1,iTRABTOTAL=-1,iTNR=-1,iTIPO_HOGAR_DCPOREDAD=-1;
     int cont=0;
 
     secpalCrear(linea, &seclec);
@@ -73,6 +73,7 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
         if(buscar(&pal,"TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO"))iOCUPYAUTO = cont;
         if(buscar(&pal,"TP_GRANGRUPO_TRABAJOTOTAL"))iTRABTOTAL = cont;
         if(buscar(&pal,"TP_GRANGRUPO_TNR"))iTNR = cont;
+        if(buscar(&pal,"TIPO_HOGAR_DCPOREDAD"))iTIPO_HOGAR_DCPOREDAD = cont;
 
         secpalLeer(&seclec, &pal);
         cont++;
@@ -88,7 +89,8 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
         iSEXO,
         iOCUPYAUTO,
         iTRABTOTAL,
-        iTNR
+        iTNR,
+        iTIPO_HOGAR_DCPOREDAD
     };
 
     //mostrarRegistrosIndices(&indreg,9);
@@ -191,12 +193,14 @@ void procesarDatos(Vector *vector, Registro *reg,int cantReg, RegIndice *ireg)
     reg[cantReg].TP_GRANGRUPO_TRABAJOTOTAL = v[ireg->iTP_GRANGRUPO_TRABAJOTOTAL];
 
     reg[cantReg].TP_GRANGRUPO_TNR = v[ireg->iTP_GRANGRUPO_TNR];
+
+    reg[cantReg].TIPO_HOGAR_DCPOREDAD = v[ireg->iTIPO_HOGAR_DCPOREDAD];
 }
 
 void mostrarRegistrosIndices(RegIndice *iReg, int cantReg)
 {
     puts("");
-    printf("\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+    printf("%d %d %d %d %d %d %d %d %d %d\n",
                iReg->iID,
                iReg->iWHOG,
                iReg->iWPER,
@@ -205,7 +209,8 @@ void mostrarRegistrosIndices(RegIndice *iReg, int cantReg)
                iReg->iSEXO_SEL,
                iReg->iTP_GRANGRUPO_OCUPACIONYAUTOCONSUMO,
                iReg->iTP_GRANGRUPO_TRABAJOTOTAL,
-               iReg->iTP_GRANGRUPO_TNR);
+               iReg->iTP_GRANGRUPO_TNR,
+               iReg->iTIPO_HOGAR_DCPOREDAD);
 
     fflush(stdout);
 }
@@ -240,7 +245,7 @@ void clasificacionRangoEtario(Registro *reg,int cant)
         if(reg[i].EDAD_SEL >= 65)
             strcpy(reg[i].GRUPO_EDAD_SEL,"65 anios o mas");
     }
-    
+
     mostrarRangoEtarios(reg,cant);
 }
 
@@ -301,4 +306,64 @@ void SumaCantidad(Registro **miReg, int cantRegisTot)
                (Region + i)->Nombre_Region);
     }
 }
+
+//Punto 3
+void DistribucionSegunDemadantesPorRegion(Registro* reg, int cant)
+{
+    //ideal en una libreria estatica
+    int **mDemPorReg = (int **)malloc(4 * sizeof(int *));
+    for (int i = 0; i < 4; i++)
+    {
+        mDemPorReg[i] = (int *)calloc(6, sizeof(int));
+    }
+
+    for(int i=0; i<cant; i++)
+    {
+
+        mDemPorReg[reg->TIPO_HOGAR_DCPOREDAD][reg->REGION-1]+=reg->WHOG;
+
+        reg++;
+    }
+
+    mostrarDistribucionDemPorReg(mDemPorReg);
+
+    //Limpio matriz
+    for (int i = 0; i < 3; i++)
+    {
+        free(mDemPorReg[i]);
+    }
+    free(mDemPorReg);
+}
+
+void mostrarDistribucionDemPorReg(int **mDemPorReg)
+{
+    const char *regiones[] = {"GBA", "PAMPEANA", "NOROESTE", "NORESTE", "CUYO", "PATAGONIA"};
+    const char *tipoHogarDesc[] = {"Solo hasta 13 anios", "Solo 14 y mas", "Ambos tipos", "Sin demandantes"};
+
+    // Orden de visualización: filas 1,2,3 primero, fila 0 al final
+    int orden[] = {1, 2, 3, 0};
+
+    // 1. Encabezado de las regiones
+    printf("%-25s", "");
+    for(int i = 0; i < 6; i++)
+    {
+        printf("%-12s", *(regiones + i));
+    }
+
+    printf("\n----------------------------------------------------------------------------------------------\n");
+
+    // 2. Recorrido de la matriz usando el orden definido
+    for(int i = 0; i < 4; i++)
+    {
+        int fila = *(orden + i); // índice real en la matriz
+
+        printf("%-25s", *(tipoHogarDesc + fila));
+        for(int j = 0; j < 6; j++)
+        {
+            printf("%-12d", mDemPorReg[fila][j]);
+        }
+        putchar('\n');
+    }
+}
+
 

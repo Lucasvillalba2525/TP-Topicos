@@ -14,3 +14,18 @@
 	<stdlib.h>
 	<stddef.h>
 
+1780374647 source:c:\users\alexi\desktop\proyectotopicos\tp-topicos\tp_topicos\archivo\archivo.c
+	"Archivo.h"
+
+1780373148 c:\users\alexi\desktop\proyectotopicos\tp-topicos\tp_topicos\archivo\archivo.h
+	"..\TDA_Vector\Vector.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdbool.h>
+
+1780366729 c:\users\alexi\desktop\proyectotopicos\tp-topicos\tp_topicos\tda_vector\vector.h
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+

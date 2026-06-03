@@ -34,8 +34,21 @@ typedef struct
     int iTP_GRANGRUPO_TNR;
     //Punto 3
     int iTIPO_HOGAR_DCPOREDAD;
+    //punto 4
+    int iTIPO_HOGAR_DCTOTAL;
+    //punto 5
+    int iCUIDADO_SOLO_HOGAR;
 
 }RegIndice;
+
+//punto 4
+typedef struct
+{
+    int sumWHOG;
+    int cantReg;
+}Hogares;
+
+
 
 typedef struct
 {
@@ -46,7 +59,7 @@ typedef struct
     int EDAD_SEL;
     int SEXO_SEL;
     //punto 2, 6, 8
-    char GRUPO_EDAD_SEL[20];
+    char GRUPO_EDAD_SEL[20];//punto 2
     int TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO;
     int TP_GRANGRUPO_TRABAJOTOTAL;
     int TP_GRANGRUPO_TNR;
@@ -61,6 +74,7 @@ typedef struct
     //punto 8
     int TP_GRANGRUPO_PERSONALES;
     //punto 9
+
 }Registro;
 
 typedef struct
@@ -103,7 +117,17 @@ bool buscarfaltante(void*pal1,void*pal2);
 //punto 3
 void DistribucionSegunDemadantesPorRegion(Registro* reg, int cant);
 void mostrarDistribucionDemPorReg(int **mDemPorReg);
-
+//punto 4
+void calcularTotalesPorRegion(Registro *reg, int cant);
+void mostrarTotalesPorRegion(Hogares hog[6][2]);
+void calcularTotalesPorEdad(Registro *reg, int cant);
+void mostrarTotalesPorEdad(const Hogares hog[6][3]);
+void calcularProporciones(Registro *reg, int cant);
+void mostrarProporciones(Hogares h[6][3],float prop[6][3],int *suma);
+void mostrarProporcionesRegion(float p[6][3]);
+//punto 5
+void calcularDistribucionPorcentual(Registro *reg, int cant);
+void mostrarDistribucionPorcentual(float prop[6][2]);
 
 
 //typedef int(*TxtAbin)(char*linea,void*reg);

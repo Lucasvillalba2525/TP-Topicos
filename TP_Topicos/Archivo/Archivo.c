@@ -56,7 +56,9 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
     Secpal seclec;
     Palabra pal;
 
-    int iID=-1, iWHOG=-1, iWPER=-1,iREGION=-1, iSEXO=-1, iEDAD=-1,iOCUPYAUTO=-1,iTRABTOTAL=-1,iTNR=-1,iTIPO_HOGAR_DCPOREDAD=-1;
+    int iID=-1, iWHOG=-1, iWPER=-1,iREGION=-1, iSEXO=-1, iEDAD=-1,iOCUPYAUTO=-1,
+    iTRABTOTAL=-1,iTNR=-1,iTIPO_HOGAR_DCPOREDAD=-1,iTIPO_HOGAR_DCTOTAL=-1,
+    iCUIDADO_SOLO_HOGAR=-1;
     int cont=0;
 
     secpalCrear(linea, &seclec);
@@ -74,6 +76,9 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
         if(buscar(&pal,"TP_GRANGRUPO_TRABAJOTOTAL"))iTRABTOTAL = cont;
         if(buscar(&pal,"TP_GRANGRUPO_TNR"))iTNR = cont;
         if(buscar(&pal,"TIPO_HOGAR_DCPOREDAD"))iTIPO_HOGAR_DCPOREDAD = cont;
+        if(buscar(&pal,"TIPO_HOGAR_DCTOTAL"))iTIPO_HOGAR_DCTOTAL = cont;
+        if(buscar(&pal,"CUIDADO_SOLO_HOGAR"))iCUIDADO_SOLO_HOGAR = cont;
+
 
         secpalLeer(&seclec, &pal);
         cont++;
@@ -90,7 +95,9 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
         iOCUPYAUTO,
         iTRABTOTAL,
         iTNR,
-        iTIPO_HOGAR_DCPOREDAD
+        iTIPO_HOGAR_DCPOREDAD,
+        iTIPO_HOGAR_DCTOTAL,
+        iCUIDADO_SOLO_HOGAR
     };
 
     //mostrarRegistrosIndices(&indreg,9);
@@ -195,6 +202,12 @@ void procesarDatos(Vector *vector, Registro *reg,int cantReg, RegIndice *ireg)
     reg[cantReg].TP_GRANGRUPO_TNR = v[ireg->iTP_GRANGRUPO_TNR];
 
     reg[cantReg].TIPO_HOGAR_DCPOREDAD = v[ireg->iTIPO_HOGAR_DCPOREDAD];
+
+    reg[cantReg].TIPO_HOGAR_DCTOTAL = v[ireg->iTIPO_HOGAR_DCTOTAL];
+
+    reg[cantReg].CUIDADO_SOLO_HOGAR = v[ireg->iCUIDADO_SOLO_HOGAR];
+    
+    
 }
 
 void mostrarRegistrosIndices(RegIndice *iReg, int cantReg)
@@ -233,7 +246,7 @@ void mostrarRegistros(Registro* Reg, int cantReg)
         fflush(stdout);
     }
 }
-
+//punto 2
 void clasificacionRangoEtario(Registro *reg,int cant)
 {
     for(int i = 0; i < cant; i++)
@@ -253,7 +266,7 @@ void mostrarRangoEtarios(Registro *reg,int cant)
 {
     printf("ID\tWHOG\tWPER\tREGION\tSEXO_SEL\tEDAD_SEL\tOCUPACIONYAUTO\tTRAB.TOTAL\tTNR\tGRUPO_EDAD_SEL\n");
 
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < cant; i++)
     {
         printf("%d\t%15d\t%15d\t%20d\t%15d\t%15d\t%15d\t%15d\t%15d\t%s\n",
                (reg + i)->ID,
@@ -268,7 +281,7 @@ void mostrarRangoEtarios(Registro *reg,int cant)
                (reg + i)->GRUPO_EDAD_SEL);
     }
 }
-
+//punto 1
 void SumaCantidad(Registro **miReg, int cantRegisTot)
 {
     CantPorRegion Region[REGIONES] = {
@@ -366,4 +379,198 @@ void mostrarDistribucionDemPorReg(int **mDemPorReg)
     }
 }
 
+//punto 4
+//A) Totales por región
+void calcularTotalesPorRegion(Registro *reg, int cant)
+{
+    Hogares hog[6][2]= {0};
+    Registro *aux=reg;
 
+    for(int i=0; i<cant;i++,aux++)
+    {
+        hog[aux->REGION-1][aux->TIPO_HOGAR_DCTOTAL].sumWHOG+=aux->WHOG;
+        hog[aux->REGION-1][aux->TIPO_HOGAR_DCTOTAL].cantReg++;
+    }
+
+    mostrarTotalesPorRegion(hog);
+}
+void mostrarTotalesPorRegion(Hogares hog[6][2])
+{
+    printf("REGION\tTIPO_HOGAR_DCTOTAL\tCantidad_Registro\tCantidad_Hog_Estimado\n");
+
+    for(int i = 0; i < 6; i++)
+    {
+        for(int j = 0; j < 2; j++)
+        {
+            printf("%d\t%15d\t%20d\t%20d\n", i+1, j, hog[i][j].cantReg, hog[i][j].sumWHOG);
+        }
+    }
+
+}
+//B) Distribución por edad de demandantes
+void calcularTotalesPorEdad(Registro *reg, int cant)
+{
+    Hogares hog[6][3] = {0};
+    Registro *aux=reg;
+
+    for(int i=0; i<cant;i++,aux++)
+    {
+        if(aux->TIPO_HOGAR_DCTOTAL == 1)
+        {
+            hog[aux->REGION-1][aux->TIPO_HOGAR_DCPOREDAD-1].sumWHOG+=aux->WHOG;
+            hog[aux->REGION-1][aux->TIPO_HOGAR_DCPOREDAD-1].cantReg++;
+        }
+    }
+    mostrarTotalesPorEdad(hog);
+}
+void mostrarTotalesPorEdad(const Hogares hog[6][3])
+{
+    printf("REGION\tTIPO_HOGAR_DCPOREDAD\tCantidad_Registro\tCantidad_Hogares_Dem_cuidado_Edad\n");
+    for(int i = 0; i < 6; i++)
+    {
+        for(int j = 0; j < 3; j++)
+        {
+            printf("%d\t%15d\t%20d\t%20d\n", i+1, j+1, hog[i][j].cantReg, hog[i][j].sumWHOG);
+        }
+    }
+
+}
+//C) Calculo de Proporciones
+void calcularProporciones(Registro *reg, int cant)
+{
+    float prop[6][3] = {0};
+    int sumTotalHog[6] = {0};
+
+    Registro *aux=reg;
+    Hogares hog[6][3] = {0};
+
+    for(int i=0; i<cant;i++,aux++)
+    {
+        if(aux->TIPO_HOGAR_DCTOTAL == 1)
+        {
+            hog[aux->REGION-1][aux->TIPO_HOGAR_DCPOREDAD-1].sumWHOG+=aux->WHOG;
+            hog[aux->REGION-1][aux->TIPO_HOGAR_DCPOREDAD-1].cantReg++;
+        }
+        
+    }
+
+
+    for(int i = 0; i < 6;i++)
+    {
+
+        for(int k=0;k<3;k++)
+            sumTotalHog[i] += hog[i][k].sumWHOG;
+        for(int j=0; j < 3; j++)
+        {
+            prop[i][j] = ((float)hog[i][j].sumWHOG/sumTotalHog[i])*100;
+        }
+    }
+
+    mostrarProporciones(hog,prop,sumTotalHog);
+    mostrarProporcionesRegion(prop);
+}
+
+void mostrarProporciones(Hogares h[6][3],float prop[6][3],int *suma)
+{
+    char *nomEdadDeman[] = {"hasta 13", "De 14 y mas", "Ambos Grupos Etarios"};
+    
+    printf("%-20s%-20s%-20s%-20s%-20s%-20s%-20s\n",
+        "REGION",
+        "TIPO_HOGAR_DCPOREDAD"
+        ,"Cantidad_Registro",
+        "Cantidad_Hogares_Dem_cuidado_Edad",
+        "Edad_Demandante_cuidado",
+        "Hogares_Totales_DEM_cuidados",
+        "Proporciones");
+    for(int i = 0; i < 6; i++)
+    {
+        for(int j = 0; j < 3; j++)
+        { 
+            printf("%-20d%-20d%-20d%-20d%-20s%-20d%-20.2f\n",
+                i+1,
+                j+1,
+                h[i][j].cantReg,
+                h[i][j].sumWHOG,
+                *(nomEdadDeman + j),
+                *(suma + i),
+                prop[i][j]);
+        }
+    }
+}
+void mostrarProporcionesRegion(float p[6][3])
+{
+    char *nomEdadDeman[] = {"hasta 13", "De 14 y mas", "Ambos Grupos Etarios"};
+    
+    printf("\n%-20s%-20s%-20s%-20s%-20s%-20s%-20s\n",
+        "Edad_dem_cuidado",
+        "GBA",
+        "PAMPEANA",
+        "NOROESTE",
+        "NORESTE",
+        "CUYO",
+        "PATAGONIA");
+    
+    for(int i = 0; i < 3; i++)
+    {
+        printf("%-20s",*(nomEdadDeman + i));
+        for(int j = 0; j < 6; j++)
+        { 
+            printf("%-20.2f",
+                p[j][i]);
+        }
+        putchar('\n');
+    }
+}
+//punto 5
+void calcularDistribucionPorcentual(Registro *reg, int cant)
+{
+    float prop[6][2] = {0};
+    int sumTotalHog[6] = {0};
+    int hog[6][2] = {0};
+    Registro *aux=reg;
+
+    for(int i=0; i<cant;i++,aux++)
+    {
+        if(aux->TIPO_HOGAR_DCTOTAL == 1)
+        {
+            hog[aux->REGION-1][aux->CUIDADO_SOLO_HOGAR]+=aux->WHOG;
+        }
+    }
+    
+
+    for(int i = 0; i < 6;i++)
+    {
+        for(int k=0;k<2;k++)
+            sumTotalHog[i] += hog[i][k];
+        for(int j=0; j < 2; j++)
+        {
+            prop[i][j] = ((float)hog[i][j]/sumTotalHog[i])*100;
+        }
+    }
+    mostrarDistribucionPorcentual(prop);
+}
+
+void mostrarDistribucionPorcentual(float prop[6][2])
+{
+    char *nomCuidadoHog[] = {"ninguno recibibe cuidado exclusivo del hogar", "cuidado exclusivo del propio hogar"};
+    
+    printf("\n%-20s%-20s%-20s%-20s%-20s%-20s%-20s\n",
+        "Cuidado_solo_hogar",
+        "GBA",
+        "PAMPEANA",
+        "NOROESTE",
+        "NORESTE",
+        "CUYO",
+        "PATAGONIA");
+    
+    for(int i = 0; i < 2; i++)
+    {
+        printf("%-50s",*(nomCuidadoHog + i));
+        for(int j = 0; j < 6; j++)
+        { 
+            printf("%-20.2f",
+                prop[j][i]);
+        }
+        putchar('\n');
+    }
+}

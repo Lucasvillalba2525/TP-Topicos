@@ -2,6 +2,12 @@
 
 #define ARG_CSV 1
 
+/*punto 4
+Análisis de hogares según demandantes de cuidado y su distribución
+porcentual por región
+A) Totales por región
+
+*/
 int main(int argc, char* argv[])
 {
     int cantReg = 0;
@@ -16,14 +22,27 @@ int main(int argc, char* argv[])
     printf("DEBUG FINAL cantReg=%d\n", cantReg);
 
     //mostrarRegistros(reg, cantReg);
+
     //punto 1
     //SumaCantidad(&reg,cantReg);
+
     //punto 2
-    //clasificacionRangoEtario(reg, cantReg);
+    //clasificacionRangoEtario(reg,21);
 
     //Punto 3
-    DistribucionSegunDemadantesPorRegion(reg, cantReg);
+    //DistribucionSegunDemadantesPorRegion(reg, cantReg);
 
+    //punto 4
+    //A) Totales por región
+    //calcularTotalesPorRegion(reg, cantReg);
+    //B) Distribución por edad de demandantes
+    //calcularTotalesPorEdad(reg, cantReg);
+    //mostrarTotalesPorEdad(const Hogares hogares[6][3]);
+    //C) Calculo de Proporciones
+    //calcularProporciones(reg,cantReg);
+
+    //punto 5
+    calcularDistribucionPorcentual(reg,cantReg);
     free(reg);
 
     return 0;

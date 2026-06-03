@@ -29,3 +29,18 @@
 	<stdlib.h>
 	<stddef.h>
 
+1780434007 source:c:\users\user\desktop\prueba\prueba\tp-topicos\tp_topicos\tp_topicos\main.c
+	"..\Archivo\Archivo.h"
+
+1780433925 c:\users\user\desktop\prueba\prueba\tp-topicos\tp_topicos\archivo\archivo.h
+	"..\TDA_Vector\Vector.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdbool.h>
+
+1780426566 c:\users\user\desktop\prueba\prueba\tp-topicos\tp_topicos\tda_vector\vector.h
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+

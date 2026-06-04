@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1780366729 source:c:\users\alexi\desktop\proyectotopicos\tp-topicos\tp_topicos\tda_vector\main.c
+
+1780366729 source:c:\users\alexi\desktop\proyectotopicos\tp-topicos\tp_topicos\tda_vector\vector.c
+	"Vector.h"
+
+1780366729 c:\users\alexi\desktop\proyectotopicos\tp-topicos\tp_topicos\tda_vector\vector.h
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+

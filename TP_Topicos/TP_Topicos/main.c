@@ -42,8 +42,13 @@ int main(int argc, char* argv[])
     //calcularProporciones(reg,cantReg);
 
     //punto 5
-    calcularDistribucionPorcentual(reg,cantReg);
+    //calcularDistribucionPorcentual(reg,cantReg);
+
+    //punto 8
+    construirArchTiempo(reg,cantReg);
     free(reg);
+    //punto 9
+    calcularTiempoProm();
 
     return 0;
 }

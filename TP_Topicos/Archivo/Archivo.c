@@ -58,7 +58,8 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
 
     int iID=-1, iWHOG=-1, iWPER=-1,iREGION=-1, iSEXO=-1, iEDAD=-1,iOCUPYAUTO=-1,
     iTRABTOTAL=-1,iTNR=-1,iTIPO_HOGAR_DCPOREDAD=-1,iTIPO_HOGAR_DCTOTAL=-1,
-    iCUIDADO_SOLO_HOGAR=-1;
+    iCUIDADO_SOLO_HOGAR=-1,iTP_GRANGRUPO_PERSONALES=-1,iTCS_GRANGRUPO_TRABAJOTOTAL=-1,
+    iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO=-1,iTCS_GRANGRUPO_TNR=-1,iTCS_GRANGRUPO_PERSONALES=-1;
     int cont=0;
 
     secpalCrear(linea, &seclec);
@@ -78,6 +79,11 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
         if(buscar(&pal,"TIPO_HOGAR_DCPOREDAD"))iTIPO_HOGAR_DCPOREDAD = cont;
         if(buscar(&pal,"TIPO_HOGAR_DCTOTAL"))iTIPO_HOGAR_DCTOTAL = cont;
         if(buscar(&pal,"CUIDADO_SOLO_HOGAR"))iCUIDADO_SOLO_HOGAR = cont;
+        if(buscar(&pal,"TP_GRANGRUPO_PERSONALES"))iTP_GRANGRUPO_PERSONALES = cont;
+        if(buscar(&pal,"TCS_GRANGRUPO_TRABAJOTOTAL"))iTCS_GRANGRUPO_TRABAJOTOTAL = cont;
+        if(buscar(&pal,"TCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO"))iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO = cont;
+        if(buscar(&pal,"TCS_GRANGRUPO_TNR"))iTCS_GRANGRUPO_TNR = cont;
+        if(buscar(&pal,"TCS_GRANGRUPO_PERSONALES"))iTCS_GRANGRUPO_PERSONALES = cont;
 
 
         secpalLeer(&seclec, &pal);
@@ -97,7 +103,12 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
         iTNR,
         iTIPO_HOGAR_DCPOREDAD,
         iTIPO_HOGAR_DCTOTAL,
-        iCUIDADO_SOLO_HOGAR
+        iCUIDADO_SOLO_HOGAR,
+        iTP_GRANGRUPO_PERSONALES,
+        iTCS_GRANGRUPO_TRABAJOTOTAL,
+        iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO,
+        iTCS_GRANGRUPO_TNR,
+        iTCS_GRANGRUPO_PERSONALES
     };
 
     //mostrarRegistrosIndices(&indreg,9);
@@ -206,8 +217,17 @@ void procesarDatos(Vector *vector, Registro *reg,int cantReg, RegIndice *ireg)
     reg[cantReg].TIPO_HOGAR_DCTOTAL = v[ireg->iTIPO_HOGAR_DCTOTAL];
 
     reg[cantReg].CUIDADO_SOLO_HOGAR = v[ireg->iCUIDADO_SOLO_HOGAR];
-    
-    
+
+    reg[cantReg].TP_GRANGRUPO_PERSONALES = v[ireg->iTP_GRANGRUPO_PERSONALES];
+
+    reg[cantReg].TCS_GRANGRUPO_TRABAJOTOTAL = v[ireg->iTCS_GRANGRUPO_TRABAJOTOTAL];
+
+    reg[cantReg].TCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO = v[ireg->iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO];
+
+    reg[cantReg].TCS_GRANGRUPO_TNR = v[ireg->iTCS_GRANGRUPO_TNR];
+
+    reg[cantReg].TCS_GRANGRUPO_PERSONALES = v[ireg->iTCS_GRANGRUPO_PERSONALES];
+
 }
 
 void mostrarRegistrosIndices(RegIndice *iReg, int cantReg)
@@ -451,7 +471,7 @@ void calcularProporciones(Registro *reg, int cant)
             hog[aux->REGION-1][aux->TIPO_HOGAR_DCPOREDAD-1].sumWHOG+=aux->WHOG;
             hog[aux->REGION-1][aux->TIPO_HOGAR_DCPOREDAD-1].cantReg++;
         }
-        
+
     }
 
 
@@ -473,7 +493,7 @@ void calcularProporciones(Registro *reg, int cant)
 void mostrarProporciones(Hogares h[6][3],float prop[6][3],int *suma)
 {
     char *nomEdadDeman[] = {"hasta 13", "De 14 y mas", "Ambos Grupos Etarios"};
-    
+
     printf("%-20s%-20s%-20s%-20s%-20s%-20s%-20s\n",
         "REGION",
         "TIPO_HOGAR_DCPOREDAD"
@@ -485,7 +505,7 @@ void mostrarProporciones(Hogares h[6][3],float prop[6][3],int *suma)
     for(int i = 0; i < 6; i++)
     {
         for(int j = 0; j < 3; j++)
-        { 
+        {
             printf("%-20d%-20d%-20d%-20d%-20s%-20d%-20.2f\n",
                 i+1,
                 j+1,
@@ -500,7 +520,7 @@ void mostrarProporciones(Hogares h[6][3],float prop[6][3],int *suma)
 void mostrarProporcionesRegion(float p[6][3])
 {
     char *nomEdadDeman[] = {"hasta 13", "De 14 y mas", "Ambos Grupos Etarios"};
-    
+
     printf("\n%-20s%-20s%-20s%-20s%-20s%-20s%-20s\n",
         "Edad_dem_cuidado",
         "GBA",
@@ -509,12 +529,12 @@ void mostrarProporcionesRegion(float p[6][3])
         "NORESTE",
         "CUYO",
         "PATAGONIA");
-    
+
     for(int i = 0; i < 3; i++)
     {
         printf("%-20s",*(nomEdadDeman + i));
         for(int j = 0; j < 6; j++)
-        { 
+        {
             printf("%-20.2f",
                 p[j][i]);
         }
@@ -536,7 +556,7 @@ void calcularDistribucionPorcentual(Registro *reg, int cant)
             hog[aux->REGION-1][aux->CUIDADO_SOLO_HOGAR]+=aux->WHOG;
         }
     }
-    
+
 
     for(int i = 0; i < 6;i++)
     {
@@ -553,7 +573,7 @@ void calcularDistribucionPorcentual(Registro *reg, int cant)
 void mostrarDistribucionPorcentual(float prop[6][2])
 {
     char *nomCuidadoHog[] = {"ninguno recibibe cuidado exclusivo del hogar", "cuidado exclusivo del propio hogar"};
-    
+
     printf("\n%-20s%-20s%-20s%-20s%-20s%-20s%-20s\n",
         "Cuidado_solo_hogar",
         "GBA",
@@ -562,15 +582,173 @@ void mostrarDistribucionPorcentual(float prop[6][2])
         "NORESTE",
         "CUYO",
         "PATAGONIA");
-    
+
     for(int i = 0; i < 2; i++)
     {
         printf("%-50s",*(nomCuidadoHog + i));
         for(int j = 0; j < 6; j++)
-        { 
+        {
             printf("%-20.2f",
                 prop[j][i]);
         }
         putchar('\n');
     }
 }
+
+
+
+//punto 8
+void construirArchTiempo(Registro *reg,int cant)
+{
+    FILE *pt= fopen("REG_TIEMPO.dat","wb");
+    tArchivoTiempo archT;
+    char *tipo_trabajo[]={"Trabajo total","Ocupacion y autoconsumo","trabajo no remunerado (TNR)","Personales"};
+    int tcs[4];
+    int tp[4];
+
+    if(pt == NULL)
+    {
+        printf("ERROR al abrir archivo.\n");
+        exit(1);
+    }
+    for(int j=0;j<4;j++)
+    {
+        for(int i=0;i<cant;i++)
+        {
+            archT.id = reg[i].ID;
+            archT.whog = reg[i].WHOG;
+            archT.wper = reg[i].WPER;
+            archT.region = reg[i].REGION;
+            archT.sexo = reg[i].SEXO_SEL;
+
+            if(reg[i].EDAD_SEL >= 14 && reg[i].EDAD_SEL <= 29)
+            strcpy(archT.grupoEdad,"14 a 29 anios");
+            if(reg[i].EDAD_SEL >= 30 && reg[i].EDAD_SEL <= 64)
+            strcpy(archT.grupoEdad,"30 a 64 anios");
+            if(reg[i].EDAD_SEL >= 65)
+            strcpy(archT.grupoEdad,"65 anios o mas");
+
+            tp[0] = reg[i].TP_GRANGRUPO_TRABAJOTOTAL;
+            tp[1] = reg[i].TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO;
+            tp[2] = reg[i].TP_GRANGRUPO_TNR;
+            tp[3] = reg[i].TP_GRANGRUPO_PERSONALES;
+
+            tcs[0] = reg[i].TCS_GRANGRUPO_TRABAJOTOTAL;
+            tcs[1] = reg[i].TCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO;
+            tcs[2] = reg[i].TCS_GRANGRUPO_TNR;
+            tcs[3] = reg[i].TCS_GRANGRUPO_PERSONALES;
+
+            strcpy(archT.tipoTrabajo, tipo_trabajo[j]);
+            archT.tiempo = tcs[j];
+            archT.valor = tp[j];
+            fwrite(&archT,sizeof(tArchivoTiempo),1,pt);
+        }
+    }
+
+    fclose(pt);
+
+    mostrarArchivoTiempo(pt);
+}
+
+void mostrarArchivoTiempo(FILE *p)
+{
+    int i=0;
+    p = fopen("REG_TIEMPO.dat","rb");
+    if (p==NULL)
+    {
+        printf("ERROR, archivo no se pudo abrir");
+        exit(1);
+    }
+
+    tArchivoTiempo archT;
+    printf("%10s%10s%10s%10s%10s%20s%25s%10s%10s\n","ID","WHOG","WPER","REGION","SEXO_SEL","G_EDAD","T_TRABAJO","VALOR","TIEMPO");
+    fread(&archT,sizeof(tArchivoTiempo),1,p);
+    while(!feof(p) && i<10)
+    {
+        i++;
+        //if(strcmp(archT.tipoTrabajo,"Ocupacion y autoconsumo")==0){}
+        printf("%10d%10d%10d%10d%10d%20s%25s%10d%10d\n",archT.id,
+            archT.whog,
+            archT.wper,
+            archT.region,
+            archT.sexo,
+            archT.grupoEdad,
+            archT.tipoTrabajo,
+            archT.valor,
+            archT.tiempo
+        );
+
+        fread(&archT,sizeof(tArchivoTiempo),1,p);
+    }
+    fclose(p);
+}
+
+//punto 9
+void calcularTiempoProm()
+{
+    FILE *p= fopen("REG_TIEMPO.dat","rb");
+    tArchivoTiempo archT;
+    float prom[4];
+    size_t numerador[4]={0},denominador[4]={0};
+
+    if(p == NULL)
+    {
+        printf("ERROR al abrir archivo.\n");
+        exit(1);
+    }
+
+    fread(&archT,sizeof(tArchivoTiempo),1,p);
+    while(!feof(p))
+    {
+        if(strcmp(archT.tipoTrabajo,"Trabajo total")==0 && archT.valor == 1)
+        {
+            denominador[3]+= archT.wper;
+            numerador[3] +=  archT.tiempo*archT.wper;
+        }
+        if(strcmp(archT.tipoTrabajo,"Ocupacion y autoconsumo")==0 && archT.valor == 1)
+        {
+                denominador[1]+= archT.wper;
+            numerador[1] +=  archT.tiempo*archT.wper;
+        }
+        if(strcmp(archT.tipoTrabajo,"trabajo no remunerado (TNR)")==0 && archT.valor == 1)
+        {
+            denominador[2]+= archT.wper;
+            numerador[2] +=  archT.tiempo*archT.wper;
+        }
+        if(strcmp(archT.tipoTrabajo,"Personales")==0 && archT.valor == 1)
+        {
+            denominador[0]+= archT.wper;
+            numerador[0] +=  archT.tiempo*archT.wper;
+        }
+        fread(&archT,sizeof(tArchivoTiempo),1,p);
+    }
+
+
+    for(int i = 0; i<4 ;i++)
+    {
+        if(numerador[i]==0)
+            printf("ERROR, NUMERADOR ES 0, NO SE REALIZO PROMEDIO. %d",i+1);
+        else
+            prom[i] = (float)numerador[i]/denominador[i];
+    }
+
+    fclose(p);
+    mostrarTiempoProm(prom,4);
+}
+
+void mostrarTiempoProm(float *prom,int ce)
+{
+    char *tipo_trabajo[]={"Personales","Ocupacion y autoconsumo","trabajo no remunerado (TNR)","Trabajo total"};
+    int horas,minutos;
+
+    printf("%20s%20s\n","TIPO_TRABAJO","TCS_PROM_TIPO_OCU");
+    for(int i=0;i<ce;i++)
+    {
+        horas=*prom/60;
+        minutos=(int)*prom%60;
+        printf("%20s%20d:%d\n",tipo_trabajo[i],horas,minutos);
+        prom++;
+    }
+}
+
+//punto 10

@@ -38,6 +38,12 @@ typedef struct
     int iTIPO_HOGAR_DCTOTAL;
     //punto 5
     int iCUIDADO_SOLO_HOGAR;
+    //punto 8
+    int iTP_GRANGRUPO_PERSONALES;
+    int iTCS_GRANGRUPO_TRABAJOTOTAL;
+    int iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO;
+    int iTCS_GRANGRUPO_TNR;
+    int iTCS_GRANGRUPO_PERSONALES;
 
 }RegIndice;
 
@@ -73,6 +79,10 @@ typedef struct
     int GRUPO_EDAD;
     //punto 8
     int TP_GRANGRUPO_PERSONALES;
+    int TCS_GRANGRUPO_TRABAJOTOTAL;
+    int TCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO;
+    int TCS_GRANGRUPO_TNR;
+    int TCS_GRANGRUPO_PERSONALES;
     //punto 9
 
 }Registro;
@@ -96,6 +106,21 @@ typedef struct
 {
     char vpal[TAM_PAL];
 }Palabra;
+
+//punto 8
+typedef struct
+{
+    int id;
+    int whog;
+    int wper;
+    int region;
+    int sexo;
+    char grupoEdad[50];
+    char tipoTrabajo[50];
+    int tiempo;
+    int valor;
+}tArchivoTiempo;
+
 
 
 typedef bool(*Buscar)(void*pal,void*linea);
@@ -128,6 +153,12 @@ void mostrarProporcionesRegion(float p[6][3]);
 //punto 5
 void calcularDistribucionPorcentual(Registro *reg, int cant);
 void mostrarDistribucionPorcentual(float prop[6][2]);
+//punto 8
+void construirArchTiempo(Registro *reg,int cant);
+void mostrarArchivoTiempo(FILE *p);
+//punto 9
+void calcularTiempoProm();
+void mostrarTiempoProm(float *prom,int ce);
 
 
 //typedef int(*TxtAbin)(char*linea,void*reg);

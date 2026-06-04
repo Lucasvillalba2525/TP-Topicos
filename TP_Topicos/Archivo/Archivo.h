@@ -159,6 +159,13 @@ void mostrarArchivoTiempo(FILE *p);
 //punto 9
 void calcularTiempoProm();
 void mostrarTiempoProm(float *prom,int ce);
+//punto 10
+void calcularTiempoPromSexo();
+void mostrarTiempoPromSexo(float *promH,float *promM,int c,int f);
+//punto 11
+void calcularTiempoPromEdad();
+int cmpRangoEdad(char *cmp);
+void mostrarTiempoPromEdad(float prom[3][4],int c,int f);
 
 
 //typedef int(*TxtAbin)(char*linea,void*reg);

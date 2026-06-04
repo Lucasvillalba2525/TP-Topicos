@@ -45,10 +45,14 @@ int main(int argc, char* argv[])
     //calcularDistribucionPorcentual(reg,cantReg);
 
     //punto 8
-    construirArchTiempo(reg,cantReg);
-    free(reg);
+    //construirArchTiempo(reg,cantReg);
+    //free(reg);
     //punto 9
-    calcularTiempoProm();
+    //calcularTiempoProm();
+    //punto 10
+    //calcularTiempoPromSexo();
+    //punto 11
+    calcularTiempoPromEdad();
 
     return 0;
 }

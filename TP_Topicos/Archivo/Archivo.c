@@ -723,18 +723,20 @@ void calcularTiempoProm()
         fread(&archT,sizeof(tArchivoTiempo),1,p);
     }
 
-
     for(int i = 0; i<4 ;i++)
     {
-        if(numerador[i]==0)
-            printf("ERROR, NUMERADOR ES 0, NO SE REALIZO PROMEDIO. %d",i+1);
-        else
-            prom[i] = (float)numerador[i]/denominador[i];
+            if(numerador[i]==0)
+                printf("ERROR, NUMERADOR ES 0, NO SE REALIZO PROMEDIO. %d",i+1);
+            else{
+
+                prom[i] = (float)numerador[i]/denominador[i];
+            }
     }
 
     fclose(p);
     mostrarTiempoProm(prom,4);
 }
+
 
 void mostrarTiempoProm(float *prom,int ce)
 {
@@ -752,3 +754,214 @@ void mostrarTiempoProm(float *prom,int ce)
 }
 
 //punto 10
+void calcularTiempoPromSexo()
+{
+    FILE *p= fopen("REG_TIEMPO.dat","rb");
+    tArchivoTiempo archT;
+    float promH[4];
+    float promM[4];
+    size_t numerador[2][4]={0},denominador[2][4]={0};
+
+    if(p == NULL)
+    {
+        printf("ERROR al abrir archivo.\n");
+        exit(1);
+    }
+
+    fread(&archT,sizeof(tArchivoTiempo),1,p);
+    while(!feof(p))
+    {
+         if(strcmp(archT.tipoTrabajo,"Personales")==0 && archT.valor == 1)
+        {
+            if(archT.sexo==1){
+                denominador[archT.sexo-1][0]+= archT.wper;
+                numerador[archT.sexo-1][0] +=  archT.tiempo*archT.wper;
+            }else{
+                denominador[archT.sexo-1][0]+= archT.wper;
+                numerador[archT.sexo-1][0] +=  archT.tiempo*archT.wper;
+            }
+        }
+        if(strcmp(archT.tipoTrabajo,"Ocupacion y autoconsumo")==0 && archT.valor == 1)
+        {
+            if(archT.sexo==1){
+                denominador[archT.sexo-1][1]+= archT.wper;
+                numerador[archT.sexo-1][1] +=  archT.tiempo*archT.wper;
+            }else{
+                denominador[archT.sexo-1][1]+= archT.wper;
+                numerador[archT.sexo-1][1] +=  archT.tiempo*archT.wper;
+            }
+        }
+        if(strcmp(archT.tipoTrabajo,"trabajo no remunerado (TNR)")==0 && archT.valor == 1)
+        {
+            if(archT.sexo==1){
+                denominador[archT.sexo-1][2]+= archT.wper;
+                numerador[archT.sexo-1][2] +=  archT.tiempo*archT.wper;
+            }else{
+                denominador[archT.sexo-1][2]+= archT.wper;
+                numerador[archT.sexo-1][2] +=  archT.tiempo*archT.wper;
+            }
+        }
+        if(strcmp(archT.tipoTrabajo,"Trabajo total")==0 && archT.valor == 1)
+        {
+            if(archT.sexo==1){
+                denominador[archT.sexo-1][3]+= archT.wper;
+                numerador[archT.sexo-1][3] +=  archT.tiempo*archT.wper;
+            }else{
+                denominador[archT.sexo-1][3]+= archT.wper;
+                numerador[archT.sexo-1][3] +=  archT.tiempo*archT.wper;
+            }
+        }
+
+        fread(&archT,sizeof(tArchivoTiempo),1,p);
+    }
+
+
+    for(int i = 0; i<2 ;i++)
+    {
+        for(int j=0;j<4;j++)
+        {
+            if(numerador[i][j]==0)
+                printf("ERROR, NUMERADOR ES 0, NO SE REALIZO PROMEDIO. %d",i+1);
+            else{
+                if(i)
+                {
+                    promH[j] = (float)numerador[i][j]/denominador[i][j];
+                }else
+                {
+                    promM[j] = (float)numerador[i][j]/denominador[i][j];
+                }
+            }
+        }
+
+    }
+
+    fclose(p);
+    mostrarTiempoPromSexo(promH,promM,4,2);
+}
+
+void mostrarTiempoPromSexo(float *promH,float *promM,int c,int f)
+{
+    char *tipo_sexo[]={"MUJERES","VARONES"};
+    int horas,minutos;
+
+    printf("%20s%20s%20s%20s%20s","SEXO_SEL","Personales","Ocupacion y autoconsumo","trabajo no remunerado (TNR)","Trabajo total");
+    for(int i=0;i<f;i++)
+    {
+        printf("\n%20s",tipo_sexo[i]);
+        for(int j=0;j<c;j++)
+        {
+            if(i)
+            {
+                horas=promH[j]/60;
+                minutos=(int)promH[j]%60;
+                //promM--;
+            }else{
+                horas=promM[j]/60;
+                minutos=(int)promM[j]%60;
+                //promH--;
+            }
+            printf("%20d:%02d",horas,minutos);
+        }
+    }
+}
+
+//punto 11
+void calcularTiempoPromEdad()
+{
+    FILE *p= fopen("REG_TIEMPO.dat","rb");
+    tArchivoTiempo archT;
+    float prom[3][4];
+    size_t numerador[3][4]={0},denominador[3][4]={0};
+    int pos;
+
+    if(p == NULL)
+    {
+        printf("ERROR al abrir archivo.\n");
+        exit(1);
+    }
+
+    fread(&archT,sizeof(tArchivoTiempo),1,p);
+    while(!feof(p))
+    {
+         if(strcmp(archT.tipoTrabajo,"Personales")==0 && archT.valor == 1)
+        {
+            pos = cmpRangoEdad(archT.grupoEdad);
+            denominador[pos][0]+= archT.wper;
+            numerador[pos][0] +=  archT.tiempo*archT.wper;
+        }
+        if(strcmp(archT.tipoTrabajo,"Ocupacion y autoconsumo")==0 && archT.valor == 1)
+        {
+            pos = cmpRangoEdad(archT.grupoEdad);
+            denominador[pos][1]+= archT.wper;
+            numerador[pos][1] +=  archT.tiempo*archT.wper;
+
+        }
+        if(strcmp(archT.tipoTrabajo,"trabajo no remunerado (TNR)")==0 && archT.valor == 1)
+        {
+            pos = cmpRangoEdad(archT.grupoEdad);
+            denominador[pos][2]+= archT.wper;
+            numerador[pos][2] +=  archT.tiempo*archT.wper;
+        }
+        if(strcmp(archT.tipoTrabajo,"Trabajo total")==0 && archT.valor == 1)
+        {
+            pos = cmpRangoEdad(archT.grupoEdad);
+            denominador[pos][3]+= archT.wper;
+            numerador[pos][3] +=  archT.tiempo*archT.wper;
+        }
+
+        fread(&archT,sizeof(tArchivoTiempo),1,p);
+    }
+
+
+    for(int i = 0; i<3 ;i++)
+    {
+        for(int j=0;j<4;j++)
+        {
+            if(numerador[i][j]==0)
+                printf("ERROR, NUMERADOR ES 0, NO SE REALIZO PROMEDIO. %d",i+1);
+            else{
+                prom[i][j] = (float)numerador[i][j]/denominador[i][j];
+            }
+        }
+
+    }
+
+    fclose(p);
+    mostrarTiempoPromEdad(prom,4,3);
+}
+
+int cmpRangoEdad(char *cmp){
+    char *nomRangoEdad[]={"14 a 29 anios","30 a 64 anios","65 anios o mas"};
+    int pos=-1;
+
+    if(strcmp(cmp,nomRangoEdad[0])==0){
+        pos = 0;
+    }else{
+        if(strcmp(cmp,nomRangoEdad[1])==0)
+        {
+            pos=1;
+        }else{
+            pos=2;
+        }
+    }
+
+    return pos;
+}
+
+void mostrarTiempoPromEdad(float prom[3][4],int c,int f)
+{
+    char *tipo_gEdad[]={"14 a 29 anios","30 a 64 anios","65 anios o mas"};
+    int horas,minutos;
+
+    printf("%20s%20s%20s%20s%20s","GRUPO_EDAD","Personales","Ocupacion y autoconsumo","trabajo no remunerado (TNR)","Trabajo total");
+    for(int i=0;i<f;i++)
+    {
+        printf("\n%20s",tipo_gEdad[i]);
+        for(int j=0;j<c;j++)
+        {
+            horas=prom[i][j]/60;
+            minutos=(int)prom[i][j]%60;
+            printf("%20d:%02d",horas,minutos);
+        }
+    }
+}

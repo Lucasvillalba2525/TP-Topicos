@@ -36,7 +36,7 @@ int secpalLeer(Secpal*sec,Palabra*pal)
     return TODO_OK;
 }
 
-int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
+int procesarCSV(const char *arch,Cmp cmp,Registro **reg,int *cantReg,Vector*vecInd)
 {
     FILE *fp = fopen(arch, "r");
 
@@ -56,62 +56,21 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
     Secpal seclec;
     Palabra pal;
 
-    int iID=-1, iWHOG=-1, iWPER=-1,iREGION=-1, iSEXO=-1, iEDAD=-1,iOCUPYAUTO=-1,
-    iTRABTOTAL=-1,iTNR=-1,iTIPO_HOGAR_DCPOREDAD=-1,iTIPO_HOGAR_DCTOTAL=-1,
-    iCUIDADO_SOLO_HOGAR=-1,iTP_GRANGRUPO_PERSONALES=-1,iTCS_GRANGRUPO_TRABAJOTOTAL=-1,
-    iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO=-1,iTCS_GRANGRUPO_TNR=-1,iTCS_GRANGRUPO_PERSONALES=-1;
     int cont=0;
 
     secpalCrear(linea, &seclec);
     secpalLeer(&seclec, &pal);
-
+    Indice elem;
     while(!secpalFin(&seclec))
     {
-        if(buscar(&pal,"ID"))iID = cont;
-        if(buscar(&pal,"WHOG"))iWHOG = cont;
-        if(buscar(&pal,"WPER"))iWPER = cont;
-        if(buscar(&pal,"REGION"))iREGION = cont;
-        if(buscar(&pal,"EDAD_SEL"))iEDAD = cont;
-        if(buscar(&pal,"SEXO_SEL"))iSEXO = cont;
-        if(buscar(&pal,"TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO"))iOCUPYAUTO = cont;
-        if(buscar(&pal,"TP_GRANGRUPO_TRABAJOTOTAL"))iTRABTOTAL = cont;
-        if(buscar(&pal,"TP_GRANGRUPO_TNR"))iTNR = cont;
-        if(buscar(&pal,"TIPO_HOGAR_DCPOREDAD"))iTIPO_HOGAR_DCPOREDAD = cont;
-        if(buscar(&pal,"TIPO_HOGAR_DCTOTAL"))iTIPO_HOGAR_DCTOTAL = cont;
-        if(buscar(&pal,"CUIDADO_SOLO_HOGAR"))iCUIDADO_SOLO_HOGAR = cont;
-        if(buscar(&pal,"TP_GRANGRUPO_PERSONALES"))iTP_GRANGRUPO_PERSONALES = cont;
-        if(buscar(&pal,"TCS_GRANGRUPO_TRABAJOTOTAL"))iTCS_GRANGRUPO_TRABAJOTOTAL = cont;
-        if(buscar(&pal,"TCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO"))iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO = cont;
-        if(buscar(&pal,"TCS_GRANGRUPO_TNR"))iTCS_GRANGRUPO_TNR = cont;
-        if(buscar(&pal,"TCS_GRANGRUPO_PERSONALES"))iTCS_GRANGRUPO_PERSONALES = cont;
+        mistrcpy(elem.campo,pal.vpal);
+        elem.nroindice=cont;
 
-
+        vectorInsertarAlFinal(vecInd,&elem);
         secpalLeer(&seclec, &pal);
         cont++;
     }
 
-    RegIndice indreg =
-    {
-        iID,
-        iWHOG,
-        iWPER,
-        iREGION,
-        iEDAD,
-        iSEXO,
-        iOCUPYAUTO,
-        iTRABTOTAL,
-        iTNR,
-        iTIPO_HOGAR_DCPOREDAD,
-        iTIPO_HOGAR_DCTOTAL,
-        iCUIDADO_SOLO_HOGAR,
-        iTP_GRANGRUPO_PERSONALES,
-        iTCS_GRANGRUPO_TRABAJOTOTAL,
-        iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO,
-        iTCS_GRANGRUPO_TNR,
-        iTCS_GRANGRUPO_PERSONALES
-    };
-
-    //mostrarRegistrosIndices(&indreg,9);
     int cap = 10;
 
     Registro *miReg = malloc(cap * sizeof(Registro));
@@ -123,13 +82,13 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
     }
 
     Vector miVec;
-    vectorCrear(&miVec);
+    vectorCrear(&miVec,sizeof(int));
 
     *cantReg = 0;
 
     while(fgets(linea, MAX_LINEA, fp))
     {
-        parseolinea(linea, &miVec, buscar);
+        parseolinea(linea, &miVec, cmp);
 
         if(*cantReg == cap)
         {
@@ -149,7 +108,7 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
             miReg = tmp;
         }
 
-        procesarDatos(&miVec,miReg,*cantReg,&indreg);
+        procesarDatos(&miVec,miReg,*cantReg,vecInd,cmp);
 
         (*cantReg)++;
 
@@ -163,7 +122,23 @@ int procesarCSV(const char *arch,Buscar buscar,Registro **reg,int *cantReg)
 
     return TODO_OK;
 }
-void parseolinea(char *linea, Vector *vector, Buscar buscar)
+
+void mistrcpy(char*dest,const char*orig)
+{
+    const char*i=orig;
+    char*j=dest;
+
+    while(*i!='\0')
+    {
+        *j=*i;
+        i++;
+        j++;
+    }
+    *j='\0';
+
+}
+
+void parseolinea(char *linea, Vector *vector, Cmp cmp)
 {
     Secpal seclec;
     Palabra pal;
@@ -175,12 +150,14 @@ void parseolinea(char *linea, Vector *vector, Buscar buscar)
     {
         int dato;
 
-        if (buscarfaltante(&pal, "NA"))
+        if(cmpfaltante(&pal, "NA")==ENCONTRADO){
             dato = DATO_FALT;
-        else
+        }
+        else{
             dato = atoi(pal.vpal);
+        }
 
-        if (vectorInsertarAlFinal(vector, dato) != TODO_OK)
+        if (vectorInsertarAlFinal(vector,&dato) != TODO_OK)
         {
             printf("ERROR INSERT VECTOR\n");
             return;
@@ -190,62 +167,72 @@ void parseolinea(char *linea, Vector *vector, Buscar buscar)
     }
 }
 
-void procesarDatos(Vector *vector, Registro *reg,int cantReg, RegIndice *ireg)
+void procesarDatos(Vector *vector, Registro *reg,int nroReg, Vector*vecInd,Cmp cmp)
 {
-    int *v = vector->vec;
+    int iID,iWHOG,iWPER,iREGION,iEDAD,iSEXO,iTP_GRANGRUPO_OCUPACIONYAUTOCONSUMO,iTP_GRANGRUPO_TRABAJOTOTAL,
+    iTP_GRANGRUPO_TNR,iTIPO_HOGAR_DCPOREDAD,iTIPO_HOGAR_DCTOTAL,iCUIDADO_SOLO_HOGAR,iTP_GRANGRUPO_PERSONALES,
+    iTCS_GRANGRUPO_TRABAJOTOTAL,iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO,iTCS_GRANGRUPO_TNR,iTCS_GRANGRUPO_PERSONALES;
 
-    reg[cantReg].ID       = v[ireg->iID];
+    int*v=vector->vec;
 
-    reg[cantReg].WHOG     = v[ireg->iWHOG];
+    Indice*ind=(Indice*)vecInd->vec;
+    Registro*p=(Registro*)reg;
 
-    reg[cantReg].WPER     = v[ireg->iWPER];
+    for(int i=0;i<vecInd->ce;i++,ind++)
+    {
+        if(cmp("ID",ind->campo)==ENCONTRADO)iID=ind->nroindice;
+        if(cmp("WHOG",ind->campo)==ENCONTRADO)iWHOG=ind->nroindice;
+        if(cmp("WPER",ind->campo)==ENCONTRADO)iWPER=ind->nroindice;
+        if(cmp("REGION",ind->campo)==ENCONTRADO)iREGION=ind->nroindice;
+        if(cmp("EDAD_SEL",ind->campo)==ENCONTRADO)iEDAD=ind->nroindice;
+        if(cmp("SEXO_SEL",ind->campo)==ENCONTRADO)iSEXO=ind->nroindice;
+        if(cmp("TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO",ind->campo)==ENCONTRADO)iTP_GRANGRUPO_OCUPACIONYAUTOCONSUMO=ind->nroindice;
+        if(cmp("TP_GRANGRUPO_TRABAJOTOTAL",ind->campo)==ENCONTRADO)iTP_GRANGRUPO_TRABAJOTOTAL=ind->nroindice;
+        if(cmp("TP_GRANGRUPO_TNR",ind->campo)==ENCONTRADO)iTP_GRANGRUPO_TNR=ind->nroindice;
+        if(cmp("TIPO_HOGAR_DCPOREDAD",ind->campo)==ENCONTRADO)iTIPO_HOGAR_DCPOREDAD=ind->nroindice;
+        if(cmp("TIPO_HOGAR_DCTOTAL",ind->campo)==ENCONTRADO)iTIPO_HOGAR_DCTOTAL=ind->nroindice;
+        if(cmp("CUIDADO_SOLO_HOGAR",ind->campo)==ENCONTRADO)iCUIDADO_SOLO_HOGAR=ind->nroindice;
+        if(cmp("TP_GRANGRUPO_PERSONALES",ind->campo)==ENCONTRADO)iTP_GRANGRUPO_PERSONALES=ind->nroindice;
+        if(cmp("TCS_GRANGRUPO_TRABAJOTOTAL",ind->campo)==ENCONTRADO)iTCS_GRANGRUPO_TRABAJOTOTAL=ind->nroindice;
+        if(cmp("TCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO",ind->campo)==ENCONTRADO)iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO=ind->nroindice;
+        if(cmp("TCS_GRANGRUPO_TNR",ind->campo)==ENCONTRADO)iTCS_GRANGRUPO_TNR=ind->nroindice;
+        if(cmp("TCS_GRANGRUPO_PERSONALES",ind->campo)==ENCONTRADO)iTCS_GRANGRUPO_PERSONALES=ind->nroindice;
+    }
 
-    reg[cantReg].REGION   = v[ireg->iREGION];
+    (p+nroReg)->ID     = *(v+iID);
 
-    reg[cantReg].EDAD_SEL = v[ireg->iEDAD_SEL];
+    (p+nroReg)->WHOG     = *(v+iWHOG);
 
-    reg[cantReg].SEXO_SEL = v[ireg->iSEXO_SEL];
+    (p+nroReg)->WPER     = *(v+iWPER);
 
-    reg[cantReg].TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO = v[ireg->iTP_GRANGRUPO_OCUPACIONYAUTOCONSUMO];
+    (p+nroReg)->REGION   = *(v+iREGION);
 
-    reg[cantReg].TP_GRANGRUPO_TRABAJOTOTAL = v[ireg->iTP_GRANGRUPO_TRABAJOTOTAL];
+    (p+nroReg)->EDAD_SEL = *(v+iEDAD);
 
-    reg[cantReg].TP_GRANGRUPO_TNR = v[ireg->iTP_GRANGRUPO_TNR];
+    (p+nroReg)->SEXO_SEL = *(v+iSEXO);
 
-    reg[cantReg].TIPO_HOGAR_DCPOREDAD = v[ireg->iTIPO_HOGAR_DCPOREDAD];
+    (p+nroReg)->TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO   = *(v+iTP_GRANGRUPO_OCUPACIONYAUTOCONSUMO);
 
-    reg[cantReg].TIPO_HOGAR_DCTOTAL = v[ireg->iTIPO_HOGAR_DCTOTAL];
+    (p+nroReg)->TP_GRANGRUPO_TRABAJOTOTAL = *(v+iTP_GRANGRUPO_TRABAJOTOTAL);
 
-    reg[cantReg].CUIDADO_SOLO_HOGAR = v[ireg->iCUIDADO_SOLO_HOGAR];
+    (p+nroReg)->TP_GRANGRUPO_TNR = *(v+iTP_GRANGRUPO_TNR);
 
-    reg[cantReg].TP_GRANGRUPO_PERSONALES = v[ireg->iTP_GRANGRUPO_PERSONALES];
+    (p+nroReg)->TIPO_HOGAR_DCPOREDAD = *(v+iTIPO_HOGAR_DCPOREDAD);
 
-    reg[cantReg].TCS_GRANGRUPO_TRABAJOTOTAL = v[ireg->iTCS_GRANGRUPO_TRABAJOTOTAL];
+    (p+nroReg)->TIPO_HOGAR_DCTOTAL = *(v+iTIPO_HOGAR_DCTOTAL);
 
-    reg[cantReg].TCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO = v[ireg->iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO];
+    (p+nroReg)->CUIDADO_SOLO_HOGAR = *(v+iCUIDADO_SOLO_HOGAR);
 
-    reg[cantReg].TCS_GRANGRUPO_TNR = v[ireg->iTCS_GRANGRUPO_TNR];
+    (p+nroReg)->TP_GRANGRUPO_PERSONALES = *(v+iTP_GRANGRUPO_PERSONALES);
 
-    reg[cantReg].TCS_GRANGRUPO_PERSONALES = v[ireg->iTCS_GRANGRUPO_PERSONALES];
+    (p+nroReg)->TCS_GRANGRUPO_TRABAJOTOTAL = *(v+iTCS_GRANGRUPO_TRABAJOTOTAL);
 
-}
+    (p+nroReg)->TCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO = *(v+iTCS_GRANGRUPO_OCUPACIONYAUTOCONSUMO);
 
-void mostrarRegistrosIndices(RegIndice *iReg, int cantReg)
-{
-    puts("");
-    printf("%d %d %d %d %d %d %d %d %d %d\n",
-               iReg->iID,
-               iReg->iWHOG,
-               iReg->iWPER,
-               iReg->iREGION,
-               iReg->iEDAD_SEL,
-               iReg->iSEXO_SEL,
-               iReg->iTP_GRANGRUPO_OCUPACIONYAUTOCONSUMO,
-               iReg->iTP_GRANGRUPO_TRABAJOTOTAL,
-               iReg->iTP_GRANGRUPO_TNR,
-               iReg->iTIPO_HOGAR_DCPOREDAD);
+    (p+nroReg)->TCS_GRANGRUPO_TNR = *(v+iTCS_GRANGRUPO_TNR);
 
-    fflush(stdout);
+    (p+nroReg)->TCS_GRANGRUPO_PERSONALES = *(v+iTCS_GRANGRUPO_PERSONALES);
+
 }
 
 void mostrarRegistros(Registro* Reg, int cantReg)
@@ -266,41 +253,7 @@ void mostrarRegistros(Registro* Reg, int cantReg)
         fflush(stdout);
     }
 }
-//punto 2
-void clasificacionRangoEtario(Registro *reg,int cant)
-{
-    for(int i = 0; i < cant; i++)
-    {
-        if(reg[i].EDAD_SEL >= 14 && reg[i].EDAD_SEL <= 29)
-            strcpy(reg[i].GRUPO_EDAD_SEL,"14 a 29 anios");
-        if(reg[i].EDAD_SEL >= 30 && reg[i].EDAD_SEL <= 64)
-            strcpy(reg[i].GRUPO_EDAD_SEL,"30 a 64 anios");
-        if(reg[i].EDAD_SEL >= 65)
-            strcpy(reg[i].GRUPO_EDAD_SEL,"65 anios o mas");
-    }
 
-    mostrarRangoEtarios(reg,cant);
-}
-
-void mostrarRangoEtarios(Registro *reg,int cant)
-{
-    printf("ID\tWHOG\tWPER\tREGION\tSEXO_SEL\tEDAD_SEL\tOCUPACIONYAUTO\tTRAB.TOTAL\tTNR\tGRUPO_EDAD_SEL\n");
-
-    for(int i = 0; i < cant; i++)
-    {
-        printf("%d\t%15d\t%15d\t%20d\t%15d\t%15d\t%15d\t%15d\t%15d\t%s\n",
-               (reg + i)->ID,
-               (reg + i)->WHOG,
-               (reg + i)->WPER,
-               (reg + i)->REGION,
-               (reg + i)->SEXO_SEL,
-               (reg + i)->EDAD_SEL,
-               (reg + i)->TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO,
-               (reg + i)->TP_GRANGRUPO_TRABAJOTOTAL,
-               (reg + i)->TP_GRANGRUPO_TNR,
-               (reg + i)->GRUPO_EDAD_SEL);
-    }
-}
 //punto 1
 void SumaCantidad(Registro **miReg, int cantRegisTot)
 {
@@ -337,6 +290,45 @@ void SumaCantidad(Registro **miReg, int cantRegisTot)
                (Region + i)->CantEstHogares,
                (Region + i)->CantEstPersonas,
                (Region + i)->Nombre_Region);
+    }
+}
+
+//punto 2
+void clasificacionRangoEtario(Registro *reg,int cantReg)
+{
+    Registro*p=reg;
+
+    for(int i=0;i<cantReg;i++,p++)
+    {
+        if(p->EDAD_SEL>=14 && p->EDAD_SEL<=29)
+            mistrcpy(p->GRUPO_EDAD_SEL,"14 a 29 anios");
+        if(p->EDAD_SEL>=30 && p->EDAD_SEL<=64)
+            mistrcpy(p->GRUPO_EDAD_SEL,"30 a 64 anios");
+        if(p->EDAD_SEL>=65)
+            mistrcpy(p->GRUPO_EDAD_SEL,"65 anios y mas");
+    }
+
+    mostrarRangoEtarios(reg,cantReg);
+}
+
+void mostrarRangoEtarios(Registro *reg,int cant)
+{
+    printf("%10s%10s%10s%10s%10s%10s%20s%10s%10s%20s\n","ID","WHOG","WPER","REGION","SEXO_SEL","EDAD_SEL","OCUPACIONYAUTO","TRAB.TOTAL","TNR","GRUPO_EDAD_SEL");
+
+
+    for(int i = 0; i < cant; i++)
+    {
+        printf("%10d\t%10d\t%10d\t%10d\t%10d\t%10d\t%10d\t%10d\t%10d\t%20s\n",
+               (reg + i)->ID,
+               (reg + i)->WHOG,
+               (reg + i)->WPER,
+               (reg + i)->REGION,
+               (reg + i)->SEXO_SEL,
+               (reg + i)->EDAD_SEL,
+               (reg + i)->TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO,
+               (reg + i)->TP_GRANGRUPO_TRABAJOTOTAL,
+               (reg + i)->TP_GRANGRUPO_TNR,
+               (reg + i)->GRUPO_EDAD_SEL);
     }
 }
 
@@ -574,7 +566,7 @@ void mostrarDistribucionPorcentual(float prop[6][2])
 {
     char *nomCuidadoHog[] = {"ninguno recibibe cuidado exclusivo del hogar", "cuidado exclusivo del propio hogar"};
 
-    printf("\n%-20s%-20s%-20s%-20s%-20s%-20s%-20s\n",
+    printf("\n%50s%10s%10s%10s%10s%10s%10s\n",
         "Cuidado_solo_hogar",
         "GBA",
         "PAMPEANA",
@@ -585,17 +577,155 @@ void mostrarDistribucionPorcentual(float prop[6][2])
 
     for(int i = 0; i < 2; i++)
     {
-        printf("%-50s",*(nomCuidadoHog + i));
+        printf("%50s",*(nomCuidadoHog + i));
         for(int j = 0; j < 6; j++)
         {
-            printf("%-20.2f",
+            printf("%10.2f",
                 prop[j][i]);
         }
         putchar('\n');
     }
 }
 
+//punto 6
 
+void** crearMatriz(int filas, int columnas, size_t tamElem)
+{
+    void** mat = malloc(filas * sizeof(void*));
+
+    if(!mat)
+    {
+        return NULL;
+    }
+
+    void** ult = mat + (filas - 1);
+
+    for(void** i = mat; i <= ult; i++)
+    {
+        *i = calloc(columnas , tamElem);
+
+        if(!*i)
+        {
+            destruirMatriz(mat, i - mat);
+            return NULL;
+        }
+    }
+
+    return mat;
+}
+
+void destruirMatriz(void** mat, int filas)
+{
+    void** ult = mat + (filas - 1);
+
+    for(void** i = mat; i <= ult; i++)
+    {
+        free(*i);
+    }
+
+    free(mat);
+}
+
+size_t Sumadeponderadores(Registro *reg,int cantReg,int **mat,int columnas,ObtenerFila obtenerFila,Acum acum,int*vecAcum)
+{
+    Registro *p = reg;
+    int fila;
+    size_t cantTotPer=0;
+
+    for (int i = 0; i < cantReg; i++,p++)
+    {
+        fila = obtenerFila(p);
+        vecAcum[fila]+=p->WPER;
+
+        if (p->TP_GRANGRUPO_OCUPACIONYAUTOCONSUMO == 1)
+            acum(mat, fila, 0, p->WPER);
+
+
+        if (p->TP_GRANGRUPO_TNR == 1)
+            acum(mat, fila, 1, p->WPER);
+
+
+        if (p->TP_GRANGRUPO_TRABAJOTOTAL == 1)
+            acum(mat, fila, 2, p->WPER);
+
+
+        cantTotPer+=p->WPER;
+    }
+
+    return cantTotPer;
+}
+
+int calcularPorcentaje(int** mat,int fil,int col,float**matPorc,int CantPer,int* vecAcum,char*Filas[])
+{
+    for(int i=0;i<fil-1;i++)
+    {
+        for(int j=0;j<col;j++)
+            matPorc[i][j]=(float)mat[i][j]/vecAcum[i]*100;
+
+    }
+
+    for(int k=0;k<col;k++)
+        matPorc[fil-1][k]=(float)mat[fil-1][k]/CantPer*100;
+
+    //mostrarMatrizPorc(matPorc,fil,col,Filas); ESTA ES LA FUNCION DONDE MUESTRA LAS MATRICES EN EL .C, TAMBIEN ESTA LA OTRA EN EL .BIN
+
+    return TODO_OK;
+}
+
+void mostrarMatrizPorc(float**matPorc,int fil,int col,char*Filas[])
+{
+    printf("%-20s", *Filas);
+    printf("%-20s%-20s%-20s\n", "OcupacYAut","TNR","TrabajTot");
+
+    for(int i=0;i<fil;i++)
+    {
+        printf("%-20s", *(Filas + i + 1));
+        for(int j=0;j<col;j++)
+            printf("%-18.2f\t",matPorc[i][j]);
+
+        putchar('\n');
+    }
+
+}
+
+int guardarMatrizBin(const char*Arch,float**mat,int fil,int col)
+{
+    FILE*pf=fopen(Arch,"wb");
+    if(!pf)
+        return ERROR_ARCHIVO;
+
+    fwrite(&fil,sizeof(int),1,pf);
+    fwrite(&col,sizeof(int),1,pf);
+
+    for(int i=0;i<fil;i++)
+        fwrite(mat[i],sizeof(float),col,pf);
+
+    fclose(pf);
+
+    return TODO_OK;
+}
+
+int leerMatrizBin(const char *Arch, int fil, int col,char*Filas[])
+{
+    FILE *fp = fopen(Arch, "rb");
+    if(!fp)
+        return ERROR_ARCHIVO;
+
+    fread(&fil, sizeof(int), 1, fp);
+    fread(&col, sizeof(int), 1, fp);
+
+    float **mat = (float**)crearMatriz(fil, col, sizeof(float));
+    if(!mat)
+        return ERROR_SIN_MEM;
+
+    for(int i = 0; i < fil; i++)
+        fread(mat[i], sizeof(float),col,fp);
+
+    mostrarMatrizPorc(mat,fil,col,Filas);
+
+    fclose(fp);
+    return TODO_OK;
+}
 
 //punto 8
 void construirArchTiempo(Registro *reg,int cant)
@@ -652,7 +782,6 @@ void construirArchTiempo(Registro *reg,int cant)
 
 void mostrarArchivoTiempo(FILE *p)
 {
-    int i=0;
     p = fopen("REG_TIEMPO.dat","rb");
     if (p==NULL)
     {
@@ -663,9 +792,9 @@ void mostrarArchivoTiempo(FILE *p)
     tArchivoTiempo archT;
     printf("%10s%10s%10s%10s%10s%20s%25s%10s%10s\n","ID","WHOG","WPER","REGION","SEXO_SEL","G_EDAD","T_TRABAJO","VALOR","TIEMPO");
     fread(&archT,sizeof(tArchivoTiempo),1,p);
-    while(!feof(p) && i<10)
+    while(!feof(p))
     {
-        i++;
+
         //if(strcmp(archT.tipoTrabajo,"Ocupacion y autoconsumo")==0){}
         printf("%10d%10d%10d%10d%10d%20s%25s%10d%10d\n",archT.id,
             archT.whog,
@@ -743,12 +872,12 @@ void mostrarTiempoProm(float *prom,int ce)
     char *tipo_trabajo[]={"Personales","Ocupacion y autoconsumo","trabajo no remunerado (TNR)","Trabajo total"};
     int horas,minutos;
 
-    printf("%20s%20s\n","TIPO_TRABAJO","TCS_PROM_TIPO_OCU");
+    printf("%40s%20s\n","TIPO_TRABAJO","TCS_PROM_TIPO_OCU");
     for(int i=0;i<ce;i++)
     {
         horas=*prom/60;
         minutos=(int)*prom%60;
-        printf("%20s%20d:%d\n",tipo_trabajo[i],horas,minutos);
+        printf("%40s%20d:%d\n",tipo_trabajo[i],horas,minutos);
         prom++;
     }
 }
@@ -844,7 +973,7 @@ void mostrarTiempoPromSexo(float *promH,float *promM,int c,int f)
     char *tipo_sexo[]={"MUJERES","VARONES"};
     int horas,minutos;
 
-    printf("%20s%20s%20s%20s%20s","SEXO_SEL","Personales","Ocupacion y autoconsumo","trabajo no remunerado (TNR)","Trabajo total");
+    printf("%20s%20s%30s%30s%20s","SEXO_SEL","Personales","Ocupacion y autoconsumo","trabajo no remunerado (TNR)","Trabajo total");
     for(int i=0;i<f;i++)
     {
         printf("\n%20s",tipo_sexo[i]);
@@ -953,7 +1082,7 @@ void mostrarTiempoPromEdad(float prom[3][4],int c,int f)
     char *tipo_gEdad[]={"14 a 29 anios","30 a 64 anios","65 anios o mas"};
     int horas,minutos;
 
-    printf("%20s%20s%20s%20s%20s","GRUPO_EDAD","Personales","Ocupacion y autoconsumo","trabajo no remunerado (TNR)","Trabajo total");
+    printf("%20s%20s%30s%30s%20s","GRUPO_EDAD","Personales","Ocupacion y autoconsumo","trabajo no remunerado (TNR)","Trabajo total");
     for(int i=0;i<f;i++)
     {
         printf("\n%20s",tipo_gEdad[i]);
